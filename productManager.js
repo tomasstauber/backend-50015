@@ -1,12 +1,18 @@
+const fs = require("fs").promises;
+
 class ProductManager {
-    constructor(){
+    constructor(path) {
         this.products = [];
+        this.path = path;
         this.prevId = 0;
     }
 
-    addProduct(title, description, price, thumbnail, code, stock) {
-        if(!(title && description && price && thumbnail && code && stock)) {
+    async addProduct(newObjet) {
+        let { title, description, price, thumbnail, code, stock } = newObjet;
+
+        if (!(title && description && price && thumbnail && code && stock)) {
             console.log("Error! Todos los campos son obligatorios!");
+            return;
         };
 
         for (const product of this.products) {
@@ -25,53 +31,124 @@ class ProductManager {
             thumbnail,
             code,
             stock
-       };
+        };
 
-       this.products.push(newProduct);
+        this.products.push(newProduct);
+        await this.saveProduct(this.products);
     }
 
     getProducts() {
-        return this.products;
+        console.log(this.products);
     }
 
-    getProductsById(productId) {
-        for (const product of this.products){
-            if (product.id === productId){
-                console.log("Resultado de búsqueda por ID:")
-                return product;
+    async getProductsById(id) {
+        try {
+            const arrayPorducts = await this.readFile();
+            const result = arrayPorducts.find(item => item.id === id);
+            if (!result) {
+                console.log("No se encontró ningún producto!");
             } else {
-                console.log("Ningún producto coincide con ese Id!")
+                console.log("Producto encontrado!");
+                return result;
             }
+        } catch (error) {
+            console.log("Ha ocurrido un  error al leer el archivo", error);
+        }
+    }
+
+    async readFile() {
+        try {
+            const result = await fs.readFile(this.path, "utf-8");
+            const arrayPorducts = JSON.parse(result);
+            return arrayPorducts;
+        } catch (error) {
+            console.log("Ha ocurrido un error al leer el archivo!");
+        }
+    }
+
+    async saveProduct(products) {
+        try {
+            await fs.writeFile(this.path, JSON.stringify(products, null, 2));
+        } catch (error) {
+            console.log("Ha ocurrido un error al guardar el archivo!", error);
+        }
+    }
+
+    async updateProduct(id, productoActualizado) {
+        try {
+            const arrayPorducts = await this.readFile();
+            const index = arrayPorducts.findIndex(item => item.id === id);
+
+            if (index !== -1) {
+                arrayPorducts.splice(index, 1, productoActualizado);
+                await this.saveProduct(this.products);
+            } else {
+                console.log("No se encontró ningún producto!");
+            }
+        } catch (error) {
+            console.log("Ha ocurrido un error al actualizar el producto!");
         }
     }
 }
 
-const PM = new ProductManager();
+const PM = new ProductManager("./products.json");
 
-PM.addProduct(
-    "Producto de prueba",
-    "Esto es un producto de prueba",
-    100,
-    "Sin imagen",
-    "123",
-    10
-);
+PM.getProducts();
 
-//Producto con el mismo codigo para probar la validación.
-PM.addProduct(
-    "Producto de prueba 1",
-    "Esto es un producto de prueba",
-    200,
-    "Sin imagen",
-    "123", 
-    20
-);
+const producto1 = {
+    title: "Producto1",
+    description: "producto de prueba",
+    price: 100,
+    thumbnail: "sin imagen",
+    code: "abc123",
+    stock: 10
+}
 
-const result = PM.getProducts();
-for (const product of result) {
-    console.log(product);
-};
+PM.addProduct(producto1);
 
-const productId = 1;
-const resultId = PM.getProductsById(productId);
-console.log(`Búsqueda de ID: ${productId} :`, resultId);
+const producto2 = {
+    title: "Producto2",
+    description: "producto de prueba",
+    price: 200,
+    thumbnail: "sin imagen",
+    code: "abc124",
+    stock: 10
+}
+
+PM.addProduct(producto2);
+
+const producto3 = {
+    title: "Producto3",
+    description: "producto de prueba",
+    price: 300,
+    thumbnail: "sin imagen",
+    code: "abc125",
+    stock: 10
+}
+
+PM.addProduct(producto3);
+
+PM.getProducts();
+
+async function findByID() {
+    const result = await PM.getProductsById(2);
+    console.log(result);
+}
+
+findByID();
+
+const producto4 = {
+    id: 1,
+    title: "Producto4salsa",
+    description: "actualización de producto",
+    price: 400,
+    //thumbnail: "sin imagen",
+    code: "abc123",
+    stock: 10
+}
+
+async function pruebaActualización() {
+    await PM.updateProduct(1, producto4);
+}
+
+pruebaActualización();
