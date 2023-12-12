@@ -81,14 +81,19 @@ class ProductManager {
 
             if (index !== -1) {
                 arrayPorducts.splice(index, 1, productoActualizado);
-                await this.saveProduct(this.products);
+                await this.saveProduct(arrayPorducts);
+                const updatedProduct = arrayPorducts.find(item => item.id === id);
+                return { success: true, message: "Producto actualizado correctamente.", updatedProduct };
             } else {
                 console.log("No se encontró ningún producto!");
+                return { success: false, message: "No se encontró ningún producto con el ID proporcionado." };
             }
         } catch (error) {
             console.log("Ha ocurrido un error al actualizar el producto!");
+            return { success: false, message: "Error al actualizar el producto." };
         }
     }
+
 }
 
 const PM = new ProductManager("./products.json");
@@ -139,16 +144,23 @@ findByID();
 
 const producto4 = {
     id: 1,
-    title: "Producto4salsa",
+    title: "ProductoActualizado",
     description: "actualización de producto",
     price: 400,
-    //thumbnail: "sin imagen",
+    thumbnail: "connnnnn imagen",
     code: "abc123",
     stock: 10
 }
 
 async function pruebaActualización() {
-    await PM.updateProduct(1, producto4);
+    const resultado = await PM.updateProduct(1, producto4);
+
+    if (resultado.success) {
+        console.log(resultado.message);
+        console.log("Producto actualizado:", resultado.updatedProduct);
+    } else {
+        console.log(resultado.message);
+    }
 }
 
 pruebaActualización();
