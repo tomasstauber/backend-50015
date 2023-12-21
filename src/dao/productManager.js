@@ -1,8 +1,9 @@
-const fs = require("fs").promises;
+import fs from "fs";
+import products from "../products.js";
 
 class ProductManager {
     constructor(path) {
-        this.products = [];
+        this.products = products;
         this.path = path;
         this.prevId = 0;
     }
@@ -38,13 +39,17 @@ class ProductManager {
     }
 
     getProducts() {
-        console.log(this.products);
+        try {
+            return this.products;
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     async getProductsById(id) {
         try {
-            const arrayPorducts = await this.readFile();
-            const result = arrayPorducts.find(item => item.id === id);
+            const arrayProducts = await this.readFile(); 
+            const result = arrayProducts.find(item => toString(item.id) === String(id));
             if (!result) {
                 console.log("No se encontró ningún producto!");
             } else {
@@ -59,8 +64,8 @@ class ProductManager {
     async readFile() {
         try {
             const result = await fs.readFile(this.path, "utf-8");
-            const arrayPorducts = JSON.parse(result);
-            return arrayPorducts;
+            const arrayProducts = JSON.parse(result);
+            return arrayProducts;
         } catch (error) {
             console.log("Ha ocurrido un error al leer el archivo!");
         }
@@ -76,13 +81,13 @@ class ProductManager {
 
     async updateProduct(id, productoActualizado) {
         try {
-            const arrayPorducts = await this.readFile();
-            const index = arrayPorducts.findIndex(item => item.id === id);
+            const arrayProducts = await this.readFile();
+            const index = arrayProducts.findIndex(item => item.id === id);
 
             if (index !== -1) {
-                arrayPorducts.splice(index, 1, productoActualizado);
-                await this.saveProduct(arrayPorducts);
-                const updatedProduct = arrayPorducts.find(item => item.id === id);
+                arrayProducts.splice(index, 1, productoActualizado);
+                await this.saveProduct(arrayProducts);
+                const updatedProduct = arrayProducts.find(item => item.id === id);
                 return { success: true, message: "Producto actualizado correctamente.", updatedProduct };
             } else {
                 console.log("No se encontró ningún producto!");
@@ -93,74 +98,6 @@ class ProductManager {
             return { success: false, message: "Error al actualizar el producto." };
         }
     }
-
 }
 
-const PM = new ProductManager("./products.json");
-
-PM.getProducts();
-
-const producto1 = {
-    title: "Producto1",
-    description: "producto de prueba",
-    price: 100,
-    thumbnail: "sin imagen",
-    code: "abc123",
-    stock: 10
-}
-
-PM.addProduct(producto1);
-
-const producto2 = {
-    title: "Producto2",
-    description: "producto de prueba",
-    price: 200,
-    thumbnail: "sin imagen",
-    code: "abc124",
-    stock: 10
-}
-
-PM.addProduct(producto2);
-
-const producto3 = {
-    title: "Producto3",
-    description: "producto de prueba",
-    price: 300,
-    thumbnail: "sin imagen",
-    code: "abc125",
-    stock: 10
-}
-
-PM.addProduct(producto3);
-
-PM.getProducts();
-
-async function findByID() {
-    const result = await PM.getProductsById(2);
-    console.log(result);
-}
-
-findByID();
-
-const producto4 = {
-    id: 1,
-    title: "ProductoActualizado",
-    description: "actualización de producto",
-    price: 400,
-    thumbnail: "connnnnn imagen",
-    code: "abc123",
-    stock: 10
-}
-
-async function pruebaActualización() {
-    const resultado = await PM.updateProduct(1, producto4);
-
-    if (resultado.success) {
-        console.log(resultado.message);
-        console.log("Producto actualizado:", resultado.updatedProduct);
-    } else {
-        console.log(resultado.message);
-    }
-}
-
-pruebaActualización();
+export default ProductManager;
