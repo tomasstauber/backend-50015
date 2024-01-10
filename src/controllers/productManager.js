@@ -9,7 +9,7 @@ class ProductManager {
     }
 
     async addProduct(newObjet) {
-        let { title, description, price, thumbnail, code, stock } = newObjet;
+        let { title, description, code, price, status, stock, category, thumbnail } = newObjet;
 
         if (!(title && description && price && thumbnail && code && stock)) {
             console.log("Error! Todos los campos son obligatorios!");
@@ -28,10 +28,12 @@ class ProductManager {
             id: this.prevId,
             title,
             description,
-            price,
-            thumbnail,
             code,
-            stock
+            price,
+            status,
+            stock,
+            category,
+            thumbnail,
         };
 
         this.products.push(newProduct);
@@ -96,6 +98,23 @@ class ProductManager {
         } catch (error) {
             console.log("Ha ocurrido un error al actualizar el producto!");
             return { success: false, message: "Error al actualizar el producto." };
+        }
+    }
+
+    deleteProduct(id) {
+        this.products = this.getProducts();
+        let pos = this.products.findIndex(item => item.id === id);
+
+        if (pos > -1) {
+            this.products.splice(pos, 1); (0,1)
+            this.saveProducts();
+            console.log("Producto #" + id + " eliminado correctamente!");
+
+            return true;
+        } else {
+            console.log("No se pudo encontrar el producto!");
+
+            return false;
         }
     }
 }
