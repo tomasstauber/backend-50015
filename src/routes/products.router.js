@@ -33,7 +33,7 @@ productsRouter.get("/products/:pid", async (req, res) => {
     }
 });
 
-productsRouter.post("/", (req, res) => {
+productsRouter.post("/products", (req, res) => {
     let { title, description, code, price, status, stock, category, thumbnail } = req.body;
 
     if (!title) {
@@ -78,7 +78,7 @@ productsRouter.post("/", (req, res) => {
     }
 });
 
-productsRouter.put("/:pid", (req, res) => {
+productsRouter.put("/products/:pid", (req, res) => {
     let pid = Number(req.params.pid);
     let { title, description, code, price, status, stock, category, thumbnail } = req.body;
 
@@ -124,16 +124,14 @@ productsRouter.put("/:pid", (req, res) => {
     }
 });
 
-productsRouter.delete("/:pid", (req, res) => {
+productsRouter.delete("/products/:pid", (req, res) => {
     let pid = Number(req.params.pid);
 
     if (PM.deleteProduct(pid)) {
-        res.send({status:"ok", message:"El Producto se eliminó correctamente!"});
+        res.send({ status: "ok", message: "El Producto se eliminó correctamente!" });
     } else {
-        res.status(500).send({status:"error", message:"Error! No se pudo eliminar el Producto!"});
+        res.status(500).send({ status: "error", message: "Error! No se pudo eliminar el Producto!" });
     }
 });
-
-productsRouter.post
 
 export default productsRouter;

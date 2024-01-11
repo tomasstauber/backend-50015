@@ -2,9 +2,9 @@ import express from "express";
 import CartManager from "../controllers/cartManager.js";
 
 const cartsRouter = express.Router();
-const CM = new CartManager();
+const CM = new CartManager("./src/models/carrito.json");
 
-cartsRouter.post("/", (req, res) => {
+cartsRouter.post("/carts", (req, res) => {
     if (CM.newCart()) {
         res.send({status:"ok", message:"El Carrito se creó correctamente!"});
     } else {
@@ -12,7 +12,7 @@ cartsRouter.post("/", (req, res) => {
     }
 });
 
-cartsRouter.get("/:cid", (req, res) => {
+cartsRouter.get("/carts/:cid", (req, res) => {
     const cid = Number(req.params.cid);
     const cart = CM.getCart(cid);
 
@@ -23,7 +23,7 @@ cartsRouter.get("/:cid", (req, res) => {
     }
 });
 
-cartsRouter.post("/:cid/products/:pid", (req, res) => {
+cartsRouter.post("/carts/:cid/products/:pid", (req, res) => {
     const cid = Number(req.params.cid);
     const pid = Number(req.params.pid);
     const cart = CM.getCart(cid);

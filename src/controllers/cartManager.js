@@ -1,7 +1,7 @@
 import fs from "fs";
 
 class CartManager {
-    constructor() {
+    constructor(path) {
         this.carts = [];
         this.path = path;
         this.createFile();
@@ -18,7 +18,7 @@ class CartManager {
         this.saveCart();
         console.log("Carrito creado!");
 
-        return true;
+        return this.newCart;
     }
 
     getCart(id) {
@@ -26,7 +26,7 @@ class CartManager {
 
         return this.carts.find(item => item.id === id);
     }
-
+    
     getCarts() {
         let carts = JSON.parse(fs.readFileSync(this.path, "utf-8"));
 

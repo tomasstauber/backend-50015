@@ -107,7 +107,7 @@ class ProductManager {
 
         if (pos > -1) {
             this.products.splice(pos, 1); (0,1)
-            this.saveProducts();
+            this.saveProduct();
             console.log("Producto #" + id + " eliminado correctamente!");
 
             return true;
