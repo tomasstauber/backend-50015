@@ -10,7 +10,7 @@ class ProductManager {
 
     async addProduct(newObjet) {
         let { title, description, code, price, status, stock, category, thumbnail } = newObjet;
-
+        console.log(newObjet);
         if (!(title && description && price && thumbnail && code && stock)) {
             console.log("Error! Todos los campos son obligatorios!");
             return;
@@ -38,6 +38,7 @@ class ProductManager {
 
         this.products.push(newProduct);
         await this.saveProduct(this.products);
+        console.log(newProduct);
     }
 
     getProducts() {
@@ -107,7 +108,7 @@ class ProductManager {
 
         if (pos > -1) {
             this.products.splice(pos, 1); (0,1)
-            this.saveProduct();
+            this.saveProduct(this.products);
             console.log("Producto #" + id + " eliminado correctamente!");
 
             return true;

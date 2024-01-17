@@ -1,0 +1,56 @@
+/* Estilo para la tarjeta del producto */
+.card {
+    width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Imagen del producto */
+  .card img {
+    width: 100%;
+    height: auto;
+  }
+  
+  /* Contenedor de información del producto */
+  .card .info {
+    padding: 15px;
+  }
+  
+  /* Título del producto */
+  .card .info h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  
+  /* Descripción del producto */
+  .card .info p {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 15px;
+  }
+  
+  /* Precio del producto */
+  .card .info .price {
+    font-size: 16px;
+    color: #333;
+    font-weight: bold;
+  }
+  
+  /* Botón de compra */
+  .card .info button {
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .card .info button:hover {
+    background-color: #45a049;
+  }
+  
