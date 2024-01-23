@@ -1,7 +1,7 @@
 import express from "express";
 import ProductManager from "../controllers/productManager.js";
 
-const PM = new ProductManager();
+const PM = new ProductManager("./src/models/products.json");
 const viewsRouter = express.Router();
 
 viewsRouter.get("/", (req, res) => {

@@ -1,16 +1,16 @@
 import fs from "fs";
-import products from "../products.js";
+
 
 class ProductManager {
     constructor(path) {
-        this.products = products;
+        this.products = [];
         this.path = path;
         this.prevId = 0;
     }
 
-    async addProduct(newObjet) {
-        let { title, description, code, price, status, stock, category, thumbnail } = newObjet;
-        console.log(newObjet);
+    async addProduct(product) {
+        let { title, description, code, price, status, stock, category, thumbnail } = product;
+        console.log(product);
         if (!(title && description && price && thumbnail && code && stock)) {
             console.log("Error! Todos los campos son obligatorios!");
             return;
@@ -38,7 +38,7 @@ class ProductManager {
 
         this.products.push(newProduct);
         await this.saveProduct(this.products);
-        console.log(newProduct);
+        console.log("Aqui el nuevo producto",newProduct);
     }
 
     getProducts() {
@@ -75,6 +75,7 @@ class ProductManager {
     }
 
     async saveProduct(products) {
+        console.log(products)
         try {
             await fs.writeFile(this.path, JSON.stringify(products, null, 2));
         } catch (error) {

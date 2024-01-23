@@ -25,8 +25,10 @@ const agregarProducto = () => {
     const description = document.getElementById("description").value;
     const code = document.getElementById("code").value;
     const category = document.getElementById("category").value;
-    const product = {title:title, thumbnail:thumbnail, price:price, description: description, code: code, category: category};
-
+    const status = document.getElementById("status").value;
+    const stock = document.getElementById("stock").value;
+    const product = {title:title, thumbnail:thumbnail, price:price, description: description, code: code, category: category, status: status, stock: stock};
+    console.log("PRODUCT", product);
     socket.emit("nuevoProducto", product);
 }
 
