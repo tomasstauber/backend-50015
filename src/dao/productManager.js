@@ -1,5 +1,4 @@
-import fs from "fs";
-
+import { promises as fs } from "fs";
 
 class ProductManager {
     constructor(path) {
@@ -10,7 +9,6 @@ class ProductManager {
 
     async addProduct(product) {
         let { title, description, code, price, status, stock, category, thumbnail } = product;
-        console.log(product);
         if (!(title && description && price && thumbnail && code && stock)) {
             console.log("Error! Todos los campos son obligatorios!");
             return;
@@ -38,14 +36,15 @@ class ProductManager {
 
         this.products.push(newProduct);
         await this.saveProduct(this.products);
-        console.log("Aqui el nuevo producto",newProduct);
     }
 
-    getProducts() {
+    async getProducts() {
         try {
-            return this.products;
+            const arrayProducts = await this.readFile();
+            return arrayProducts;
         } catch (error) {
             console.log(error);
+            return [];
         }
     }
 
@@ -70,12 +69,13 @@ class ProductManager {
             const arrayProducts = JSON.parse(result);
             return arrayProducts;
         } catch (error) {
-            console.log("Ha ocurrido un error al leer el archivo!");
+            console.error("Ha ocurrido un error al leer el archivo:", error.message);
+            throw error;
         }
     }
+    
 
     async saveProduct(products) {
-        console.log(products)
         try {
             await fs.writeFile(this.path, JSON.stringify(products, null, 2));
         } catch (error) {

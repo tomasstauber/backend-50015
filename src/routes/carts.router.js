@@ -1,8 +1,9 @@
 import express from "express";
-import CartManager from "../controllers/cartManager.js";
+//import CartManager from "../dao/cartManager.js";
+import CartManager from "../dao/cartManagerDB.js"
 
 const cartsRouter = express.Router();
-const CM = new CartManager("./src/models/carrito.json");
+const CM = new CartManager("./src/dao/carrito.json");
 
 cartsRouter.post("/carts", (req, res) => {
     if (CM.newCart()) {
