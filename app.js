@@ -7,6 +7,7 @@ import viewsRouter from "./src/routes/views.router.js";
 //import ProductManager from "./src/dao/productManager.js";
 import ProductManager from "./src/dao/productManagerDB.js";
 import mongoose from "mongoose";
+import chatManager from "./src/dao/chatManager.js";
 
 //Configuración del servidor
 const app = express();
@@ -40,7 +41,9 @@ mongoose.connect(urlConnect)
         console.log("Error al conectar con la base de datos!", error.message);
         throw error;
     });
-    
+
+const CM = new chatManager();
+
 //Socket
 socketServer.on("connection", async (socket) => {
 
@@ -58,5 +61,11 @@ socketServer.on("connection", async (socket) => {
         socket.on("eliminarProducto", async (id) => {
             await PM.deleteProduct(id);
             socket.emit("productos", await PM.getProducts());
+        });
+
+        socket.on("newMessage", async (data) => {
+            CM.createMessage(data);
+            const messages = await CM.getMessages();
+            socket.emit("messages", messages);
         });
     });

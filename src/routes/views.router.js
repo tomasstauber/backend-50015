@@ -23,23 +23,16 @@ viewsRouter.get("/", async (req, res) => {
                 thumbnail: product.thumbnail
             }
         })
-        res.render("index", { products: arrayProducts });
+        res.render("index", { title: "REVOLVER", products: arrayProducts });
     } catch (error) {
         res.status(500).send("Ha ocurrido un error en el servidor!", error.message);
         throw error;
     }
-})
+});
 
-
-/* viewsRouter.get("/", async (req, res) => {
-    try {
-        const products = await PM.getProducts(); 
-        res.render("index", { title: "REVOLVER", products: products });
-    } catch (error) {
-        console.error("Ha ocurrido un error al obtener los productos!", error);
-        res.status(500).json({ error: "Ha ocurrido un error en el servidor!" });
-    }
-}); */
+viewsRouter.get("/chat", (req, res) => {
+    res.render("chat");
+});
 
 viewsRouter.get("/realtimeproducts", (req, res) => {
     try {

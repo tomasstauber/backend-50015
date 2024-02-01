@@ -13,10 +13,19 @@ class ProductManager {
                 return true;
             }
         } catch (error) {
-            console.log("Ha ocurrido un error al agregar el producto", error.message);
+            console.log("Ha ocurrido un error al agregar el producto! ", error.message);
             throw error;
         }
     }
+
+    async getProducts() {
+        try {
+            return await productsModel.find().lean();
+        } catch (error) {
+            console.log("Ha ocurrido un error al obtener los productos! ", error.message);
+            throw error;
+        }
+    };
 
     async updateProduct(id, product) {
         try {
@@ -29,7 +38,7 @@ class ProductManager {
             }
             return false;
         } catch (error) {
-            console.log("Ha ocurrido un error al actualizar el producto!", error.message);
+            console.log("Ha ocurrido un error al actualizar el producto! ", error.message);
             throw error;
         }
     }
@@ -50,25 +59,7 @@ class ProductManager {
         }
     }
 
-    /* async getProducts(params) {
-        let {limit, page, query, sort} = params;
-        limit = limit ? limit : 10;
-        page = page ? page : 1;
-        query = query || {};
-        sort = sort ? sort == "asc" ? 1 : -1 : 0;
-
-        let products = await productsModel.paginate(query, {limit: limit, page: page, sort: { price : sort }});
-
-        let status = products ? "succes" : "error";
-
-        let prevLink = products.hasPrevPage ? "hhtp://localhost:8080/api/products?limit=" + limit + "&page=" + products.prevPage : null;
-        let nextLink = products.hasNextPage ? "hhtp://localhost:8080/api/products?limit=" + limit + "&page=" + products.nextPage : null;
-
-        products = { status: status, payload: products.docs, prevPage: products.prevPage, nextPage: products.nextPage, page: products.page, hasPrevPage: products.hasPrevPage, hasNextPage: products.hasNextPage, prevLink: prevLink, nextLink: nextLink };
-
-        return products;
-    } */
-
+    
     async getProductById(id) {
         try {
             if (this.validateId(id)) {

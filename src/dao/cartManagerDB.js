@@ -1,4 +1,4 @@
-import { cartsModel }from "../models/carts.model.js";
+import { cartsModel } from "../models/carts.model.js";
 
 class CartManager {
 
@@ -9,13 +9,19 @@ class CartManager {
     }
 
     async getCart(id) {
-        if (this.validateId(id)) {
-            return await cartsModel.findOne({ _id: id }).lean() || null;
-        } else {
-            console.log("Ningún carrito coincide con el Id proporcionado!");
-            return null;
+        try {
+            if (this.validateId(id)) {
+                return await cartsModel.findById(id).lean() || null;
+            } else {
+                console.log("Ningún carrito coincide con el Id proporcionado!");
+                return null;
+            }
+        } catch (error) {
+            console.error("Error al obtener el carrito:", error.message);
+            throw error;
         }
     }
+    
 
     async getCarts() {
         return await cartsModel.find().lean();
@@ -24,7 +30,7 @@ class CartManager {
     async addToCart(cid, pid) {
         try {
             if (await cartsModel.exists({ _id: cid, products: { $elemMatch: { product: pid } } })) {
-                await cartModel.updateOne({ _id: cid, products: { $elemMatch: { product: pid } } }, { $inc: { "products.$.quantity": 1 } }, { new: true, upsert: true });
+                await cartsModel.updateOne({ _id: cid, products: { $elemMatch: { product: pid } } }, { $inc: { "products.$.quantity": 1 } }, { new: true, upsert: true });
             } else {
                 await cartsModel.updateOne({ _id: cid }, { $push: { "product": pid, "quantity": 1 } }, { new: true, upsert: true });
             }
@@ -36,16 +42,20 @@ class CartManager {
         }
     }
 
-    async updateQueantityProductCart(cid, pid, quantity) {
+    async updateQuantityProductCart(cid, pid, quantity) {
         try {
             if (this.validateId(cid)) {
                 const cart = await this.getCart(cid);
                 const product = cart.products.find(item => item.product === pid);
-                product.quantity = quantity;
-
-                await cartsModel.updateOne({ _id: cid }, { products: cart.products });
-                console.log("Carrito actualizado correctamente!");
-                return true;
+                if (product) {
+                    product.quantity = quantity;
+                    await cartsModel.updateOne({ _id: cid }, { products: cart.products });
+                    console.log("Carrito actualizado correctamente!");
+                    return true;
+                } else {
+                    console.log("No se encontró el producto en el carrito!");
+                    return false;
+                }
             } else {
                 console.log("Ningún producto o carrito coincide con el Id proporcionado!");
                 return false;
@@ -55,6 +65,7 @@ class CartManager {
             throw error;
         }
     }
+
 
     async updateProducts(cid, products) {
         try {
