@@ -4,154 +4,87 @@ import ProductManager from "../dao/productManagerDB.js";
 const productsRouter = express.Router();
 const PM = new ProductManager();
 
-
-/* productsRouter.get("/products", async (req, res) => {
-    try {
-        const products = await PM.getProducts();
-        const arrayProducts = products.map(product => {
-            return {
-                id: product._id,
-                title: product.title,
-                description: product.description,
-                code: product.code,
-                price: product.price,
-                status: product.status,
-                stock: product.stock,
-                category: product.category,
-                thumbnail: product.thumbnail
-            }
-        })
-        res.send({ products: arrayProducts });
-    } catch (error) {
-        res.status(500).send("Ha ocurrido un error en el servidor!", error.message);
-        throw error;
-    }
-}); */
-
 productsRouter.get("/products", async (req, res) => {
     try {
-        const products = await PM.getProducts(req.query);
-        res.send({ products })
+        const { limit = 10, page = 1, sort, query } = req.query;
+
+        const products = await PM.getProducts({
+            limit: parseInt(limit),
+            page: parseInt(page),
+            sort,
+            query,
+        });
+
+        res.json({
+            status: 'success',
+            payload: products,
+            totalPages: products.totalPages,
+            prevPage: products.prevPage,
+            nextPage: products.nextPage,
+            page: products.page,
+            hasPrevPage: products.hasPrevPage,
+            hasNextPage: products.hasNextPage,
+            prevLink: products.hasPrevPage ? `/api/products?limit=${limit}&page=${products.prevPage}&sort=${sort}&query=${query}` : null,
+            nextLink: products.hasNextPage ? `/api/products?limit=${limit}&page=${products.nextPage}&sort=${sort}&query=${query}` : null,
+        });
+
     } catch (error) {
-        res.status(500).send("Ha ocurrido un error en el servidor!" + error.message);
+        console.error("Error al obtener productos", error);
+        res.status(500).json({ status: 'error', error: "Error interno del servidor" });
         throw error;
     }
 });
+
 
 productsRouter.get("/products/:pid", async (req, res) => {
+    const pid = req.params.pid;
     try {
-        let pid = req.params.pid;
         const product = await PM.getProductById(pid);
-        res.send(product)
+        if (!product) {
+            return res.json({ error: "No se encontró el producto!" });
+        }
+        res.json(product);
     } catch (error) {
-        res.status(500).send("Ha ocurrido un error en el servidor!" + error.message);
+        console.log("Ha ocurrido un error al encontrar el producto!", error);
+        res.status(500).json({ error: "Ha ocurrido un error en el servidor!" });
         throw error;
     }
 });
 
-productsRouter.post("/products", (req, res) => {
+productsRouter.post("/products", async (req, res) => {
+    const newProduct = req.body;
     try {
-        let { title, description, code, price, status, stock, category, thumbnail } = req.body;
-
-        if (!title) {
-            res.status(400).send({ status: "error", message: "Debe completar el campo Title!" });
-            return false;
-        }
-        if (!description) {
-            res.status(400).send({ status: "error", message: "Debe completar el campo Description!" });
-            return false;
-        }
-        if (!code) {
-            res.status(400).send({ status: "error", message: "Debe completar el campo Code!" });
-            return false;
-        }
-        if (!price) {
-            res.status(400).send({ status: "error", message: "Debe completar el campo Price!" });
-            return false;
-        }
-        if (!status) {
-            status = true;
-        }
-        if (!stock) {
-            res.status(400).send({ status: "error", message: "Debe completar el campo Stock!" });
-            return false;
-        }
-        if (!category) {
-            res.status(400).send({ status: "error", message: "Debe completar el campo Category!" });
-            return false;
-        }
-        if (!thumbnail) {
-            res.status(400).send({ status: "error", message: "Debe completar el campo Thumbnails!" });
-            return false;
-        }
-        if (PM.createProduct({ title, description, code, price, status, stock, category, thumbnail })) {
-            res.send({ status: "OK", message: "El producto se ha cargado exitosamente!" })
-        } else {
-            res.status(500).send({ status: "error", message: "Error al cargar el producto!" })
-        }
+        await PM.createProduct(newProduct);
+        res.status(501).json({ message: "Producto agregado correctamente!" })
     } catch (error) {
-        res.status(500).send("Ha ocurrido un error en el servidor!", error.message);
+        console.log("Ha ocurrido un error al cargar el producto!", error);
+        res.status(500).json({ error: "Ha ocurrido un error en el servidor!" });
         throw error;
     }
 });
 
-productsRouter.put("/products/:pid", (req, res) => {
-    try {
-        let pid = req.params.pid;
-        let { title, description, code, price, status, stock, category, thumbnail } = req.body;
+productsRouter.put("/products/:pid", async (req, res) => {
+    const pid = req.params.pid;
+    const productUp = req.body;
 
-        if (!title) {
-            res.status(400).send({ status: "error", message: "Debe completar el campo Title!" });
-            return false;
-        }
-        if (!description) {
-            res.status(400).send({ status: "error", message: "Debe completar el campo Description!" });
-            return false;
-        }
-        if (!code) {
-            res.status(400).send({ status: "error", message: "Debe completar el campo Code!" });
-            return false;
-        }
-        if (!price) {
-            res.status(400).send({ status: "error", message: "Debe completar el campo Price!" });
-            return false;
-        }
-        if (!status) {
-            status = true;
-        }
-        if (!stock) {
-            res.status(400).send({ status: "error", message: "Debe completar el campo Stock!" });
-            return false;
-        }
-        if (!category) {
-            res.status(400).send({ status: "error", message: "Debe completar el campo Category!" });
-            return false;
-        }
-        if (!thumbnail) {
-            res.status(400).send({ status: "error", message: "Debe completar el campo Thumbnails!" });
-            return false;
-        }
-        if (PM.updateProduct(pid, { title, description, code, price, status, stock, category, thumbnail })) {
-            res.send({ status: "OK", message: "El producto se actualizó correctamente!" })
-        } else {
-            res.status(500).send({ status: "error", message: "Error al actualizar el producto!" })
-        }
+    try {
+        await PM.updateProduct(pid, productUp);
+        res.json({ message: "Producto actualizado exitosamente" });
     } catch (error) {
-        res.status(500).send("Ha ocurrido un error en el servidor!", error.message);
+        console.error("Ha ocurrido un error al actualizar producto!", error);
+        res.status(500).json({ error: "Ha ocurrido un error en el servidor!" });
         throw error;
     }
 });
 
-productsRouter.delete("/products/:pid", (req, res) => {
+productsRouter.delete("/products/:pid", async (req, res) => {
+    const pid = req.params.pid;
     try {
-        let pid = req.params.pid;
-        if (PM.deleteProduct(pid)) {
-            res.send({ status: "ok", message: "El Producto se eliminó correctamente!" });
-        } else {
-            res.status(500).send({ status: "error", message: "Error! No se pudo eliminar el Producto!" });
-        }
+        await PM.deleteProduct(pid);
+        res.json({ message: "Producto eliminado exitosamente" });
     } catch (error) {
-        res.status(500).send("Ha ocurrido un error en el servidor!", error.message);
+        console.error("Ha ocurrido un error al eliminar producto!", error);
+        res.status(500).json({ error: "Ha ocurrido un error en el servidor!" });
         throw error;
     }
 });

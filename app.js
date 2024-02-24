@@ -4,10 +4,11 @@ import { Server } from "socket.io";
 import productsRouter from "./src/routes/products.router.js";
 import cartsRouter from "./src/routes/carts.router.js";
 import viewsRouter from "./src/routes/views.router.js";
-//import ProductManager from "./src/dao/productManager.js";
 import ProductManager from "./src/dao/productManagerDB.js";
 import mongoose from "mongoose";
 import chatManager from "./src/dao/chatManager.js";
+import { allowInsecurePrototypeAccess } from "@handlebars/allow-prototype-access";
+import Handlebars from "handlebars";
 
 //Configuración del servidor
 const app = express();
@@ -23,7 +24,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("./src/public"));
 
 //Handlebars
-app.engine('handlebars', engine());
+app.engine('handlebars', engine({
+    handlebars: allowInsecurePrototypeAccess(Handlebars)
+}));
 app.set('view engine', 'handlebars');
 app.set('views', './src/views');
 

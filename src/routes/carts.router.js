@@ -1,70 +1,66 @@
 import express from "express";
-import CartManager from "../dao/cartManagerDB.js"
+import CartManager from "../dao/cartManagerDB.js";
+import { cartsModel } from "../models/carts.model.js";
 
 const cartsRouter = express.Router();
 const CM = new CartManager();
 
 
 //crear carrito
-cartsRouter.post("/carts", (req, res) => {
+cartsRouter.post("/carts", async (req, res) => {
     try {
-        if (CM.createCart()) {
-            res.send({ status: "ok", message: "El Carrito se creó correctamente!" });
-        } else {
-            res.status(500).send({ status: "error", message: "Error! No se pudo crear el Carrito!" });
-        }
+        const newCart = await CM.createCart();
+        res.json(newCart);
     } catch (error) {
-        res.status(500).send("Ha ocurrido un error en el servidor!", error.message);
+        console.log("Ha ocurrido un error al crear el carrito!", error);
+        res.status(500).send({ error: "Ha ocurrido un error en el servidor!" });
         throw error;
     }
 });
-
 
 cartsRouter.get("/carts", async (req, res) => {
     try {
-        const carts = await CM.getCarts();
-        if (carts) {
-            res.send({ carts });
+        const cart = await cartsModel.find();
+        if(!cart) {
+            console.log("No hay carritos para mostrar!");
+            return null;
         }
+        res.json(cart)
     } catch (error) {
-        res.status(500).send("Ha ocurrido un error en el servidor!", error.message);
+        console.log("Ha ocurrido un error al obtener los carritos!", error);
+        res.status(500).send({ error: "Ha ocurrido un error en el servidor!" });
+        throw error;
+    }
+})
+
+
+cartsRouter.get("/carts/:cid", async (req, res) => {
+    const cid = req.params.cid;
+    try {
+        const cart = await cartsModel.findById(cid);
+        if (!cart) {
+            console.log("Ningún carrito coincide con ese Id!");
+            return res.status(400).json({ error: "No se encontró el carrito!" });
+        }
+        return res.json(cart.products)
+    } catch (error) {
+        console.log("Ha ocurrido un error al obtener el carrito!", error);
+        res.status(500).json({ error: "Ha ocurrido un error en el servidor!" });
         throw error;
     }
 });
 
 
-cartsRouter.get("/carts/:cid", (req, res) => {
+cartsRouter.post("/carts/:cid/products/:pid", async (req, res) => {
+    const cid = req.params.cid;
+    const pid = req.params.pid;
+    const quantity = req.body.quantity || 1;
     try {
-        const cid = req.params.cid;
-        const cart = CM.getCart(cid);
-        if (cart) {
-            res.json({ cart });
-        } else {
-            res.status(400).send({ status: "error", message: "Error! ID inexistente!" });
-        }
+        const updateCart = await CM.addToCart(cid, pid, quantity);
+        res.json(updateCart.products)
     } catch (error) {
-        res.status(500).send("Ha ocurrido un error en el servidor!", error.message);
-        throw error;
-    }
-});
-
-
-cartsRouter.post("/carts/:cid/products/:pid", (req, res) => {
-    try {
-        const cid = req.params.cid;
-        const pid = req.params.pid;
-        const cart = CM.getCart(cid);
-        if (cart) {
-            if (CM.addToCart(cid, pid)) {
-                res.send({ status: "ok", message: "Producto agregado al carrito!" });
-            } else {
-                res.status(400).send({ status: "error", message: "Error! No se pudo agregar el Producto al Carrito!" });
-            }
-        } else {
-            res.status(400).send({ status: "error", message: "Error! ID inexistente!" });
-        }
-    } catch (error) {
-        res.status(500).send("Ha ocurrido un error en el servidor!", error.message);
+        console.log("Ha ocurrido un error al agregar el producto al carrito!", error);
+        res.status(500).json({ error: "Ha ocurrido un error en el servidor!" });
         throw error;
     }
 });
@@ -75,29 +71,25 @@ cartsRouter.put("/carts/:cid/products/:pid", async (req, res) => {
         const cid = req.params.cid;
         const pid = req.params.pid;
         const quantity = req.body.quantity;
-        const result = await CM.updateQuantityProductCart(cid, pid, quantity);
-        if (result) {
-            res.send({ status: "Ok", message: "Producto actualizado correctamente!" });
-        } else {
-            res.status(400).send({ status: "Error", message: "Ha ocurrido un error al actualizar el producto!" });
+        const updateCart = await CM.updateQuantityProductCart(cid, pid, quantity);
+        if (!updateCart) {
+            return res.status(400).json({ error: "Ha ocurrido un error al actualizar el carrito!" });
         }
+        res.json({ status: "success", message: "Cantidad actualizada correctamente!", updateCart });
     } catch (error) {
-        res.status(500).send("Ha ocurrido un error en el servidor! " + error.message);
+        console.log("Ha ocurrido un error al actualizar la q en el carrito!", error);
+        res.status(500).json({ error: "Ha ocurrido un error en el servidor! " });
         throw error;
     }
 });
 
 
 cartsRouter.put("/carts/:cid", async (req, res) => {
+    const cid = req.params.cid;
+    const updateProducts = req.body;
     try {
-        const cid = req.params.cid;
-        const products = req.body.products;
-        const result = await CM.updateProducts(cid, products);
-        if (result) {
-            res.send({ status: "Ok", message: "Productos actualizados correctamente!" });
-        } else {
-            res.status(400).send({ status: "Error", message: "Ha ocurrido un error al actualizar los productos!" });
-        }
+        const updateCart = await CM.updateProducts(cid, updateProducts);
+        res.json(updateCart);
     } catch (error) {
         res.status(500).send("Ha ocurrido un error en el servidor!", error.message);
         throw error;
@@ -109,14 +101,11 @@ cartsRouter.delete("/carts/:cid/products/:pid", async (req, res) => {
     try {
         const cid = req.params.cid;
         const pid = req.params.pid;
-        const result = await CM.deleteProductCart(cid, pid);
-        if (result) {
-            res.send({ status: "Ok", message: "Producto eliminado correctamente!" });
-        } else {
-            res.status(400).send({ status: "Error", message: "Ha ocurrido un error al eliminar el producto!" });
-        }
+        const updateCart = await CM.deleteProductCart(cid, pid);
+        res.json({status: "success", message: "Producto eliminado correctamente!", updateCart});
     } catch (error) {
-        res.status(500).send("Ha ocurrido un error en el servidor!", error.message);
+    console.log("Ha ocurrido un error al eliminar el producto del carrito!", error);
+        res.status(500).send("Ha ocurrido un error en el servidor!");
         throw error;
     }
 });
@@ -125,14 +114,11 @@ cartsRouter.delete("/carts/:cid/products/:pid", async (req, res) => {
 cartsRouter.delete("/carts/:cid", async (req, res) => {
     try {
         const cid = req.params.cid;
-        const result = await CM.deleteProductsCart(cid);
-        if (result) {
-            res.send({ status: "Ok", message: "Productos eliminados correctamente!" });
-        } else {
-            res.status(400).send({ status: "Error", message: "Ha ocurrido un error al eliminar los productos!" });
-        }
+        const updateCart = await CM.deleteProductsCart(cid);
+        res.json({status: "success", message: "Carrito eliminado correctamente!", updateCart});
     } catch (error) {
-        res.status(500).send("Ha ocurrido un error en el servidor!", error.message);
+        console.log("Ha ocurrido un error al eliminar el carrito!", error);
+        res.status(500).send("Ha ocurrido un error en el servidor!");
         throw error;
     }
 });
