@@ -1,0 +1,25 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container">
+    <a class="navbar-brand" href="/" title="Revolver">
+      <img src="https://roparevolver.com/cdn/shop/files/logos_cf62876c-8f73-4d43-9b6e-6b4f09ddaf21.png?v=1613579306" alt="Revolver" width="120">
+    </a>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          {{#if isLoggedIn}}
+          <a href="/products" class="btn btn-sm btn-outline-dark">Inicio</a>
+          <a href="/profile" class="btn btn-sm btn-outline-dark">Mi Perfil</a>
+          <a href="/api/sessions/logout" class="btn btn-sm btn-outline-danger">Cerrar Sesión</a>
+          {{else}}
+          <a href="/login" class="btn btn-sm btn-outline-dark">Iniciar Sesión</a>
+          {{/if}}
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+{{#if isLoggedIn}}
+<div class="container">
+  <h1 class="text-center fs-1">¡Bienvenido/a {{user.first_name}} {{user.last_name}}!</h1>
+</div>
+{{/if}}

@@ -1,4 +1,9 @@
 body{
   background-color: #145369;
 }
+.producto-imagen {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+}
   

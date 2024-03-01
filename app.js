@@ -9,6 +9,12 @@ import mongoose from "mongoose";
 import chatManager from "./src/dao/chatManager.js";
 import { allowInsecurePrototypeAccess } from "@handlebars/allow-prototype-access";
 import Handlebars from "handlebars";
+import cookieParser from "cookie-parser";
+import session from "express-session";
+import MongoStore from "connect-mongo";
+import sessionsRouter from "./src/routes/sessions.router.js";
+import usersRouter from "./src/routes/users.router.js";
+import __dirname from "./src/utils.js";
 
 //Configuración del servidor
 const app = express();
@@ -17,27 +23,44 @@ const httpServer = app.listen(PORT, () => {
     console.log("Servidor activo en el puerto: " + PORT);
 });
 const socketServer = new Server(httpServer);
+const urlConnect = "mongodb+srv://tomastauber:ZWx5dcTbW71K5hk4@tomascluster.tkfwypg.mongodb.net/e-commerce?retryWrites=true&w=majority";
 
 //Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("./src/public"));
+app.use(cookieParser());
+app.use(session({
+    secret: "secretCoder",
+    resave: true,
+    saveUninitialized: true,
+    store: MongoStore.create({
+        mongoUrl: urlConnect,
+        ttl: 90
+    })
+}));
+app.use((req, res, next) => {
+    req.isLoggedIn = req.session.user ? true : false;
+    next();
+});
+
 
 //Handlebars
 app.engine('handlebars', engine({
-    handlebars: allowInsecurePrototypeAccess(Handlebars)
+    handlebars: allowInsecurePrototypeAccess(Handlebars),
 }));
 app.set('view engine', 'handlebars');
-app.set('views', './src/views');
+app.set("views", __dirname + "/views");
+
 
 //Routers
 app.use("/api", productsRouter);
 app.use("/api", cartsRouter);
+app.use("/api/sessions", sessionsRouter);
+app.use("/api/users", usersRouter)
 app.use("/", viewsRouter);
 
 //Mongoose
-
-const urlConnect = "mongodb+srv://tomastauber:ZWx5dcTbW71K5hk4@tomascluster.tkfwypg.mongodb.net/e-commerce?retryWrites=true&w=majority";
 mongoose.connect(urlConnect)
     .then(() => console.log("Conectado a la base de datos"))
     .catch((error) => {
@@ -50,25 +73,25 @@ const CM = new chatManager();
 //Socket
 socketServer.on("connection", async (socket) => {
 
-        const PM = new ProductManager("./src/dao/products.json");
+    const PM = new ProductManager("./src/dao/products.json");
 
-        console.log("Nueva Conexión!");
+    console.log("Nueva Conexión!");
 
+    socket.emit("productos", await PM.getProducts());
+
+    socket.on("nuevoProducto", async (product) => {
+        await PM.addProduct(product);
         socket.emit("productos", await PM.getProducts());
-
-        socket.on("nuevoProducto", async (product) => {
-            await PM.addProduct(product);
-            socket.emit("productos", await PM.getProducts());
-        });
-
-        socket.on("eliminarProducto", async (id) => {
-            await PM.deleteProduct(id);
-            socket.emit("productos", await PM.getProducts());
-        });
-
-        socket.on("newMessage", async (data) => {
-            CM.createMessage(data);
-            const messages = await CM.getMessages();
-            socket.emit("messages", messages);
-        });
     });
+
+    socket.on("eliminarProducto", async (id) => {
+        await PM.deleteProduct(id);
+        socket.emit("productos", await PM.getProducts());
+    });
+
+    socket.on("newMessage", async (data) => {
+        CM.createMessage(data);
+        const messages = await CM.getMessages();
+        socket.emit("messages", messages);
+    });
+});

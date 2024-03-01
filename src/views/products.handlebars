@@ -2,24 +2,26 @@
     <div class="row">
         {{#each products}}
         <div class="col-md-4">
-            <div class="card border-0 mb-3">
-                <a href="/products/{{this._id}}" class="text-decoration-none">
-                        <img src="{{this.thumbnail}}" class="img-fluid" alt="{{this.title}}">
+            <div class="card h-100 border-0 mb-3">
+                <a href="/products/{{_id}}" class="text-decoration-none">
+                        <img src="{{this.thumbnail}}" class="img-fluid producto-imagen" alt="{{this.title}}">
                     </a>
                 <div class="card-body text-center">
                     <p class="card-text text-dark">{{this.title}}<br><span class="text-danger">${{this.price}}</span>
                     </p>
-                    <p><button class="btn btn-dark"
+                    <p><button class="btn btn-sm btn-outline-dark"
                             onclick="agregarProductoAlCarrito('{{product._id}}')">Agregar</button></p>
                 </div>
             </div>
         </div>
         {{/each}}
     </div>
+    <div class="container d-flex justify-content-center">
     {{#if hasNextPage}}
-    <a href="/products?page={{nextPage}}"> Siguiente </a>
+    <a class="btn btn-lg btn-outline-dark" href="/products?page={{nextPage}}"> Siguiente </a>
     {{/if}}
     {{#if hasPrevPage}}
-    <a href="/products?page={{prevPage}}"> Anterior </a>
+    <a class="btn btn-lg btn-outline-dark" href="/products?page={{prevPage}}"> Anterior </a>
     {{/if}}
+    </div>
 </div>
