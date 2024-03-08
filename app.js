@@ -15,6 +15,8 @@ import MongoStore from "connect-mongo";
 import sessionsRouter from "./src/routes/sessions.router.js";
 import usersRouter from "./src/routes/users.router.js";
 import __dirname from "./src/utils.js";
+import passport from "passport";
+import initializePassport from "./src/config/passport.config.js";
 
 //Configuración del servidor
 const app = express();
@@ -39,6 +41,9 @@ app.use(session({
         ttl: 90
     })
 }));
+initializePassport();
+app.use(passport.initialize());
+app.use(passport.session()); 
 app.use((req, res, next) => {
     req.isLoggedIn = req.session.user ? true : false;
     next();
