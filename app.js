@@ -49,7 +49,6 @@ app.use((req, res, next) => {
     next();
 });
 
-
 //Handlebars
 app.engine('handlebars', engine({
     handlebars: allowInsecurePrototypeAccess(Handlebars),

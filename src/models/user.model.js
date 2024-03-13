@@ -1,4 +1,4 @@
-import mongoose, { trusted } from "mongoose";
+import mongoose from "mongoose";
 
 const usersCollection = "users";
 
@@ -9,7 +9,6 @@ const userSchema = new mongoose.Schema({
     },
     last_name: {
         type: String,
-        //required: true
     },
     email: {
         type: String,
@@ -19,7 +18,6 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        //required: true
     },
     age: {
         type: Number,
@@ -29,6 +27,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: "user",
         enum: ["user", "admin"]
+    },
+    cart: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "carts"
     }
 });
 

@@ -1,5 +1,6 @@
 import express from "express";
 import passport from "passport";
+import { usersModel } from "../models/user.model.js";
 
 const sessionsRouter = express.Router();
 
@@ -9,11 +10,25 @@ sessionsRouter.post("/login", passport.authenticate("login", { failureRedirect: 
         first_name: req.user.first_name,
         last_name: req.user.last_name,
         age: req.user.age,
-        email: req.user.eamil
+        email: req.user.email
     }
     req.session.login = true;
     res.redirect("/profile");
 });
+
+sessionsRouter.get("/current", async (req, res) => {
+    if (req.session.user) {
+        const userId = req.user._id;
+        try {
+            const currentUser = await usersModel.findById(userId);
+            res.json({ user: currentUser });
+        } catch (error) {
+            res.status(500).json({ error: 'Ha ocurrido un error al obtener el usuario actual' });
+        }
+    } else {
+        res.status(401).json({ error: 'Usuario no autenticado' });
+    }
+})
 
 sessionsRouter.get("/faillogin", async (req, res) => {
     res.render("faillogin");
